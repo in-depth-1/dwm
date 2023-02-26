@@ -5,6 +5,8 @@ static const unsigned int borderpx = 1;    /* 窗口边框大小 */
 static const unsigned int snap     = 32;   /* 边缘依附宽度 */
 static const int showbar           = 1;    /* 是否显示状态栏 */
 static const int topbar            = 1;    /* 指定状态栏位置: 0 底部, 1 顶部 */
+static int gappi                   = 12;   /* 窗口与窗口之间的间隙*/
+static int gappo                   = 12;   /* 窗口与边缘之间的间隙*/
 static unsigned int baralpha       = 0xc0; /* 状态栏透明度 */
 static unsigned int borderalpha    = 0xdd; /* 窗口边框透明度 */
 static const char *fonts[]         = {"JetBrainsMono Nerd Font:style=medium:size=13", "monospace:size=10"};
@@ -97,9 +99,10 @@ static const Key keys[] = {
 };
 
 /* button definitions */
-/* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */
+/* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle,
+ * ClkClientWin, or ClkRootWin */
 static const Button buttons[] = {
-  /* click                event mask      button          function        argument */
+  /* click                event mask      button          function argument */
     {ClkLtSymbol,   0,      Button1, setlayout,      {0}               },
     {ClkLtSymbol,   0,      Button3, setlayout,      {.v = &layouts[2]}},
     {ClkWinTitle,   0,      Button2, zoom,           {0}               },

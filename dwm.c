@@ -118,6 +118,8 @@ struct Monitor {
   int by;             /* bar geometry */
   int mx, my, mw, mh; /* screen size */
   int wx, wy, ww, wh; /* window area  */
+  int gappi;          /* 窗口与窗口之间的间隙*/
+  int gappo;          /* 窗口与边缘之间的间隙*/
   unsigned int seltags;
   unsigned int sellt;
   unsigned int tagset[2];
@@ -245,19 +247,19 @@ static int lrpad;  /* sum of left and right padding for text */
 static int (*xerrorxlib)(Display *, XErrorEvent *);
 static unsigned int numlockmask             = 0;
 static void (*handler[LASTEvent])(XEvent *) = {[ButtonPress]      = buttonpress,
-                                               [ClientMessage]    = clientmessage,
-                                               [ConfigureRequest] = configurerequest,
-                                               [ConfigureNotify]  = configurenotify,
-                                               [DestroyNotify]    = destroynotify,
-                                               [EnterNotify]      = enternotify,
-                                               [Expose]           = expose,
-                                               [FocusIn]          = focusin,
-                                               [KeyPress]         = keypress,
-                                               [MappingNotify]    = mappingnotify,
-                                               [MapRequest]       = maprequest,
-                                               [MotionNotify]     = motionnotify,
-                                               [PropertyNotify]   = propertynotify,
-                                               [UnmapNotify]      = unmapnotify};
+  [ClientMessage]    = clientmessage,
+  [ConfigureRequest] = configurerequest,
+  [ConfigureNotify]  = configurenotify,
+  [DestroyNotify]    = destroynotify,
+  [EnterNotify]      = enternotify,
+  [Expose]           = expose,
+  [FocusIn]          = focusin,
+  [KeyPress]         = keypress,
+  [MappingNotify]    = mappingnotify,
+  [MapRequest]       = maprequest,
+  [MotionNotify]     = motionnotify,
+  [PropertyNotify]   = propertynotify,
+  [UnmapNotify]      = unmapnotify};
 static Atom wmatom[WMLast], netatom[NetLast];
 static int running = 1;
 static Cur *cursor[CurLast];
@@ -507,7 +509,7 @@ void clientmessage(XEvent *e) {
   if (cme->message_type == netatom[NetWMState]) {
     if (cme->data.l[1] == netatom[NetWMFullscreen] || cme->data.l[2] == netatom[NetWMFullscreen])
       setfullscreen(c, (cme->data.l[0] == 1 /* _NET_WM_STATE_ADD    */
-                        || (cme->data.l[0] == 2 /* _NET_WM_STATE_TOGGLE */ && !c->isfullscreen)));
+            || (cme->data.l[0] == 2 /* _NET_WM_STATE_TOGGLE */ && !c->isfullscreen)));
   } else if (cme->message_type == netatom[NetActiveWindow]) {
     if (c != selmon->sel && !c->isurgent)
       seturgent(c, 1);
@@ -616,6 +618,8 @@ Monitor *createmon(void) {
   m->nmaster                  = nmaster;
   m->showbar                  = showbar;
   m->topbar                   = topbar;
+  m->gappi                    = gappi;
+  m->gappo                    = gappo;
   m->lt[0]                    = &layouts[0];
   m->lt[1]                    = &layouts[1 % LENGTH(layouts)];
   strncpy(m->ltsymbol, layouts[0].symbol, sizeof m->ltsymbol);
@@ -1077,31 +1081,31 @@ void movemouse(const Arg *arg) {
   do {
     XMaskEvent(dpy, MOUSEMASK | ExposureMask | SubstructureRedirectMask, &ev);
     switch (ev.type) {
-    case ConfigureRequest:
-    case Expose:
-    case MapRequest:
-      handler[ev.type](&ev);
-      break;
-    case MotionNotify:
-      if ((ev.xmotion.time - lasttime) <= (1000 / 60))
-        continue;
-      lasttime = ev.xmotion.time;
+      case ConfigureRequest:
+      case Expose:
+      case MapRequest:
+        handler[ev.type](&ev);
+        break;
+      case MotionNotify:
+        if ((ev.xmotion.time - lasttime) <= (1000 / 60))
+          continue;
+        lasttime = ev.xmotion.time;
 
-      nx = ocx + (ev.xmotion.x - x);
-      ny = ocy + (ev.xmotion.y - y);
-      if (abs(selmon->wx - nx) < snap)
-        nx = selmon->wx;
-      else if (abs((selmon->wx + selmon->ww) - (nx + WIDTH(c))) < snap)
-        nx = selmon->wx + selmon->ww - WIDTH(c);
-      if (abs(selmon->wy - ny) < snap)
-        ny = selmon->wy;
-      else if (abs((selmon->wy + selmon->wh) - (ny + HEIGHT(c))) < snap)
-        ny = selmon->wy + selmon->wh - HEIGHT(c);
-      if (!c->isfloating && selmon->lt[selmon->sellt]->arrange && (abs(nx - c->x) > snap || abs(ny - c->y) > snap))
-        togglefloating(NULL);
-      if (!selmon->lt[selmon->sellt]->arrange || c->isfloating)
-        resize(c, nx, ny, c->w, c->h, 1);
-      break;
+        nx = ocx + (ev.xmotion.x - x);
+        ny = ocy + (ev.xmotion.y - y);
+        if (abs(selmon->wx - nx) < snap)
+          nx = selmon->wx;
+        else if (abs((selmon->wx + selmon->ww) - (nx + WIDTH(c))) < snap)
+          nx = selmon->wx + selmon->ww - WIDTH(c);
+        if (abs(selmon->wy - ny) < snap)
+          ny = selmon->wy;
+        else if (abs((selmon->wy + selmon->wh) - (ny + HEIGHT(c))) < snap)
+          ny = selmon->wy + selmon->wh - HEIGHT(c);
+        if (!c->isfloating && selmon->lt[selmon->sellt]->arrange && (abs(nx - c->x) > snap || abs(ny - c->y) > snap))
+          togglefloating(NULL);
+        if (!selmon->lt[selmon->sellt]->arrange || c->isfloating)
+          resize(c, nx, ny, c->w, c->h, 1);
+        break;
     }
   } while (ev.type != ButtonRelease);
   XUngrabPointer(dpy, CurrentTime);
@@ -1136,19 +1140,19 @@ void propertynotify(XEvent *e) {
     return; /* ignore */
   else if ((c = wintoclient(ev->window))) {
     switch (ev->atom) {
-    default:
-      break;
-    case XA_WM_TRANSIENT_FOR:
-      if (!c->isfloating && (XGetTransientForHint(dpy, c->win, &trans)) && (c->isfloating = (wintoclient(trans)) != NULL))
-        arrange(c->mon);
-      break;
-    case XA_WM_NORMAL_HINTS:
-      c->hintsvalid = 0;
-      break;
-    case XA_WM_HINTS:
-      updatewmhints(c);
-      drawbars();
-      break;
+      default:
+        break;
+      case XA_WM_TRANSIENT_FOR:
+        if (!c->isfloating && (XGetTransientForHint(dpy, c->win, &trans)) && (c->isfloating = (wintoclient(trans)) != NULL))
+          arrange(c->mon);
+        break;
+      case XA_WM_NORMAL_HINTS:
+        c->hintsvalid = 0;
+        break;
+      case XA_WM_HINTS:
+        updatewmhints(c);
+        drawbars();
+        break;
     }
     if (ev->atom == XA_WM_NAME || ev->atom == netatom[NetWMName]) {
       updatetitle(c);
@@ -1216,25 +1220,25 @@ void resizemouse(const Arg *arg) {
   do {
     XMaskEvent(dpy, MOUSEMASK | ExposureMask | SubstructureRedirectMask, &ev);
     switch (ev.type) {
-    case ConfigureRequest:
-    case Expose:
-    case MapRequest:
-      handler[ev.type](&ev);
-      break;
-    case MotionNotify:
-      if ((ev.xmotion.time - lasttime) <= (1000 / 60))
-        continue;
-      lasttime = ev.xmotion.time;
+      case ConfigureRequest:
+      case Expose:
+      case MapRequest:
+        handler[ev.type](&ev);
+        break;
+      case MotionNotify:
+        if ((ev.xmotion.time - lasttime) <= (1000 / 60))
+          continue;
+        lasttime = ev.xmotion.time;
 
-      nw = MAX(ev.xmotion.x - ocx - 2 * c->bw + 1, 1);
-      nh = MAX(ev.xmotion.y - ocy - 2 * c->bw + 1, 1);
-      if (c->mon->wx + nw >= selmon->wx && c->mon->wx + nw <= selmon->wx + selmon->ww && c->mon->wy + nh >= selmon->wy && c->mon->wy + nh <= selmon->wy + selmon->wh) {
-        if (!c->isfloating && selmon->lt[selmon->sellt]->arrange && (abs(nw - c->w) > snap || abs(nh - c->h) > snap))
-          togglefloating(NULL);
-      }
-      if (!selmon->lt[selmon->sellt]->arrange || c->isfloating)
-        resize(c, c->x, c->y, nw, nh, 1);
-      break;
+        nw = MAX(ev.xmotion.x - ocx - 2 * c->bw + 1, 1);
+        nh = MAX(ev.xmotion.y - ocy - 2 * c->bw + 1, 1);
+        if (c->mon->wx + nw >= selmon->wx && c->mon->wx + nw <= selmon->wx + selmon->ww && c->mon->wy + nh >= selmon->wy && c->mon->wy + nh <= selmon->wy + selmon->wh) {
+          if (!c->isfloating && selmon->lt[selmon->sellt]->arrange && (abs(nw - c->w) > snap || abs(nh - c->h) > snap))
+            togglefloating(NULL);
+        }
+        if (!selmon->lt[selmon->sellt]->arrange || c->isfloating)
+          resize(c, c->x, c->y, nw, nh, 1);
+        break;
     }
   } while (ev.type != ButtonRelease);
   XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, c->w + c->bw - 1, c->h + c->bw - 1);
@@ -1537,30 +1541,40 @@ void tagmon(const Arg *arg) {
 }
 
 void tile(Monitor *m) {
-  unsigned int i, n, h, mw, my, ty;
+  /*
+   * mw: master 的宽度
+   * mh: master 的高度
+   * th: stack 的高度
+   * my: stack 的 y 坐标
+   * ty: stack 的 y 坐标
+   * */
+  unsigned int i, n, mw, mh, my, th, ty;
   Client *c;
 
-  for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++)
-    ;
-  if (n == 0)
-    return;
+  for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
+  if (n == 0) return;
 
   if (n > m->nmaster)
-    mw = m->nmaster ? m->ww * m->mfact : 0;
+    mw = m->nmaster ? (m->ww + m->gappi) * m->mfact : 0;
   else
-    mw = m->ww;
-  for (i = my = ty = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
+    mw = m->ww - 2 * m->gappo + m->gappi;
+
+  // 单个 master 的高度
+  mh = m->nmaster == 0 ? 0 : (m->wh - 2 * m->gappo + m->gappi * (m->nmaster - 1)) / m ->nmaster;
+  // 单个 stack 的高度
+  th = n == m->nmaster ? 0 : (m->wh - 2 * m->gappo - m->gappi * (n - m->nmaster - 1)) / (n - m->nmaster);
+
+  for (i = 0, my = ty = m->gappo, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++) {
+
     if (i < m->nmaster) {
-      h = (m->wh - my) / (MIN(n, m->nmaster) - i);
-      resize(c, m->wx, m->wy + my, mw - (2 * c->bw), h - (2 * c->bw), 0);
-      if (my + HEIGHT(c) < m->wh)
-        my += HEIGHT(c);
-    } else {
-      h = (m->wh - ty) / (n - i);
-      resize(c, m->wx + mw, m->wy + ty, m->ww - mw - (2 * c->bw), h - (2 * c->bw), 0);
-      if (ty + HEIGHT(c) < m->wh)
-        ty += HEIGHT(c);
+      resize(c, m->wx + m->gappo, m->wy + my, mw - (2 * c->bw) - m->gappi, mh - (2 * c->bw), 0);
+      my += HEIGHT(c) + m->gappi;
     }
+    else {
+      resize(c, m->wx + mw + m->gappo, m->wy + ty, m->ww - mw - (2 * c->bw) - (2 * m->gappo), th - (2 * c->bw), 0);
+      ty += HEIGHT(c) + m->gappi;
+    }
+  }
 }
 
 void togglebar(const Arg *arg) {
