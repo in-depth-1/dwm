@@ -1,6 +1,7 @@
 /* See LICENSE file for copyright and license details. */
 
 /* appearance */
+#include <X11/X.h>
 static const unsigned int borderpx = 1;    /* 窗口边框大小 */
 static const unsigned int snap     = 32;   /* 边缘依附宽度 */
 static const int showbar           = 1;    /* 是否显示状态栏 */
@@ -63,25 +64,24 @@ static const Layout layouts[] = {
     .v = (const char *[]) { "/bin/sh", "-c", cmd, NULL }                                                                                                                                               \
   }
 
-/* commands */
-static char dmenumon[2]       = "0"; /* component of dmenucmd, manipulated in spawn() */
-static const char *dmenucmd[] = {"dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL};
-static const char *termcmd[]  = {"alacritty", NULL};
-
 static const Key keys[] = {
-  /* modifier                     key        function        argument */
-    {MODKEY,             XK_p,      spawn,          {.v = dmenucmd}   },
-    {MODKEY,             XK_Return, spawn,          {.v = termcmd}    }, /* 开启终端 */
-    {MODKEY,             XK_b,      togglebar,      {0}               },
-    {MODKEY,             XK_j,      focusstack,     {.i = +1}         },
-    {MODKEY,             XK_k,      focusstack,     {.i = -1}         },
+  /* modifier            key        function        argument          */
+    {MODKEY,             XK_t,      togglebar,      {0}               }, /* super + t              | 显示/隐藏状态栏 */
+
+    {MODKEY,             XK_Tab,    focusstack,     {.i = +1}         }, /* super + tab            |  本 tag 内切换聚焦窗口 */
+    {MODKEY | ShiftMask, XK_Tab,    focusstack,     {.i = -1}         }, /* super + shift + tab    |  本 tag 内切换聚焦窗口 */
+    {MODKEY,             XK_Up,     focusstack,     {.i = -1}         }, /* super + up             |  本 tag 内切换聚焦窗口 */
+    {MODKEY,             XK_Down,   focusstack,     {.i = +1}         }, /* super + down           |  本 tag 内切换聚焦窗口 */
+
     {MODKEY,             XK_i,      incnmaster,     {.i = +1}         },
     {MODKEY,             XK_d,      incnmaster,     {.i = -1}         },
-    {MODKEY,             XK_h,      setmfact,       {.f = -0.05}      },
-    {MODKEY,             XK_l,      setmfact,       {.f = +0.05}      },
-    {MODKEY,             XK_Return, zoom,           {0}               },
+
+    {MODKEY,             XK_comma,  setmfact,       {.f = -0.05}      }, /* super + ,              | 降低窗口宽度 */
+    {MODKEY,             XK_period, setmfact,       {.f = +0.05}      }, /* super + .              | 增加窗口宽度 */
+
+    {MODKEY | ShiftMask, XK_Return, zoom,           {0}               }, /* super + shift + return | 将当前聚焦窗口置为主窗口 */
     {MODKEY,             XK_Tab,    view,           {0}               },
-    {MODKEY,             XK_q,      killclient,     {0}               }, /* 关闭窗口 */
+    {MODKEY,             XK_q,      killclient,     {0}               }, /* super + q              | 关闭当前窗口 */
     {MODKEY,             XK_t,      setlayout,      {.v = &layouts[0]}},
     {MODKEY,             XK_f,      setlayout,      {.v = &layouts[1]}},
     {MODKEY,             XK_m,      setlayout,      {.v = &layouts[2]}},
@@ -89,13 +89,23 @@ static const Key keys[] = {
     {MODKEY | ShiftMask, XK_space,  togglefloating, {0}               },
     {MODKEY,             XK_0,      view,           {.ui = ~0}        },
     {MODKEY | ShiftMask, XK_0,      tag,            {.ui = ~0}        },
-    {MODKEY,             XK_comma,  focusmon,       {.i = -1}         },
-    {MODKEY,             XK_period, focusmon,       {.i = +1}         },
+    {MODKEY,             XK_b,      focusmon,       {.i = -1}         }, /* super + b              | 光标移动到另一个显示器 */
+    {MODKEY | ShiftMask, XK_b,      focusmon,       {.i = +1}         }, /* super + shift + b      | 聚焦窗口移动到另一个显示器 */
     {MODKEY | ShiftMask, XK_comma,  tagmon,         {.i = -1}         },
     {MODKEY | ShiftMask, XK_period, tagmon,         {.i = +1}         },
     {MODKEY,             XK_F12,    quit,           {0}               }, /* 退出 dwm */
 
-    TAGKEYS(XK_1, 0) TAGKEYS(XK_2, 1) TAGKEYS(XK_3, 2) TAGKEYS(XK_4, 3) TAGKEYS(XK_5, 4) TAGKEYS(XK_6, 5) TAGKEYS(XK_7, 6) TAGKEYS(XK_8, 7) TAGKEYS(XK_9, 8)
+    {MODKEY,             XK_Return, spawn,          SHCMD("alacritty")}, /* super + return         | 打开终端 */
+
+    TAGKEYS(XK_1, 0)  /* 切换到 tag 1 */
+    TAGKEYS(XK_2, 1)  /* 切换到 tag 2 */
+    TAGKEYS(XK_3, 2)  /* 切换到 tag 3 */
+    TAGKEYS(XK_4, 3)  /* 切换到 tag 4 */
+    TAGKEYS(XK_5, 4)  /* 切换到 tag 5 */
+    TAGKEYS(XK_6, 5)  /* 切换到 tag 6 */
+    TAGKEYS(XK_7, 6)  /* 切换到 tag 7 */
+    TAGKEYS(XK_8, 7)  /* 切换到 tag 8 */
+    TAGKEYS(XK_9, 8)  /* 切换到 tag 9 */
 };
 
 /* button definitions */
@@ -106,7 +116,7 @@ static const Button buttons[] = {
     {ClkLtSymbol,   0,      Button1, setlayout,      {0}               },
     {ClkLtSymbol,   0,      Button3, setlayout,      {.v = &layouts[2]}},
     {ClkWinTitle,   0,      Button2, zoom,           {0}               },
-    {ClkStatusText, 0,      Button2, spawn,          {.v = termcmd}    },
+    {ClkStatusText, 0,      Button2, spawn,          {0}               },
     {ClkClientWin,  MODKEY, Button1, movemouse,      {0}               },
     {ClkClientWin,  MODKEY, Button2, togglefloating, {0}               },
     {ClkClientWin,  MODKEY, Button3, resizemouse,    {0}               },

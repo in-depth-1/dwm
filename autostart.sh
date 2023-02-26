@@ -11,11 +11,11 @@ setting() {
   [ $1 ] &&  sleep $1
 
   # 关闭蜂鸣器
-  xset -b             
+  xset -b
   # 设置使用键盘时触控板短暂失效
   syndaemon -i 1 -t -K -R -d
   # 设置壁纸
-  feh --randomize --bg-fill ~/Pictures/Wallpaper/2022/*
+  feh --randomize --bg-fill ~/Pictures/Wallpaper/2023/*
 }
 
 # 程序配置
@@ -36,7 +36,7 @@ cron() {
   let num=10
   while true; do
     # 1 分钟切换一次壁纸
-    [ $(( num % 60 )) -eq 0 ] && feh --randomize --bg-fill ~/Pictures/Wallpaper/2022/*
+    [ $(( num % 60 )) -eq 0 ] && feh --randomize --bg-fill ~/Pictures/Wallpaper/2023/*
     sleep 10; let num+=10
   done
 }
