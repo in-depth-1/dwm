@@ -66,36 +66,37 @@ static const Layout layouts[] = {
 
 static const Key keys[] = {
   /* modifier            key        function        argument          */
-    {MODKEY,             XK_t,      togglebar,      {0}               }, /* super + t              | 显示/隐藏状态栏 */
+    {MODKEY,             XK_t,      togglebar,      {0}                   }, /* super + t              | 显示/隐藏状态栏 */
 
-    {MODKEY,             XK_Tab,    focusstack,     {.i = +1}         }, /* super + tab            |  本 tag 内切换聚焦窗口 */
-    {MODKEY | ShiftMask, XK_Tab,    focusstack,     {.i = -1}         }, /* super + shift + tab    |  本 tag 内切换聚焦窗口 */
-    {MODKEY,             XK_Up,     focusstack,     {.i = -1}         }, /* super + up             |  本 tag 内切换聚焦窗口 */
-    {MODKEY,             XK_Down,   focusstack,     {.i = +1}         }, /* super + down           |  本 tag 内切换聚焦窗口 */
+    {MODKEY,             XK_Tab,    focusstack,     {.i = +1}             }, /* super + tab            | 本 tag 内切换聚焦窗口 */
+    {MODKEY | ShiftMask, XK_Tab,    focusstack,     {.i = -1}             }, /* super + shift + tab    | 本 tag 内切换聚焦窗口 */
+    {MODKEY,             XK_Up,     focusstack,     {.i = -1}             }, /* super + up             | 本 tag 内切换聚焦窗口 */
+    {MODKEY,             XK_Down,   focusstack,     {.i = +1}             }, /* super + down           | 本 tag 内切换聚焦窗口 */
 
-    {MODKEY,             XK_i,      incnmaster,     {.i = +1}         },
-    {MODKEY,             XK_d,      incnmaster,     {.i = -1}         },
+    {MODKEY,             XK_i,      incnmaster,     {.i = +1}             },
+    {MODKEY,             XK_d,      incnmaster,     {.i = -1}             },
 
-    {MODKEY,             XK_comma,  setmfact,       {.f = -0.05}      }, /* super + ,              | 降低窗口宽度 */
-    {MODKEY,             XK_period, setmfact,       {.f = +0.05}      }, /* super + .              | 增加窗口宽度 */
+    {MODKEY,             XK_comma,  setmfact,       {.f = -0.05}          }, /* super + ,              | 降低窗口宽度 */
+    {MODKEY,             XK_period, setmfact,       {.f = +0.05}          }, /* super + .              | 增加窗口宽度 */
 
-    {MODKEY | ShiftMask, XK_Return, zoom,           {0}               }, /* super + shift + return | 将当前聚焦窗口置为主窗口 */
-    {MODKEY,             XK_Tab,    view,           {0}               },
-    {MODKEY,             XK_q,      killclient,     {0}               }, /* super + q              | 关闭当前窗口 */
-    {MODKEY,             XK_t,      setlayout,      {.v = &layouts[0]}},
-    {MODKEY,             XK_f,      setlayout,      {.v = &layouts[1]}},
-    {MODKEY,             XK_m,      setlayout,      {.v = &layouts[2]}},
-    {MODKEY,             XK_space,  setlayout,      {0}               },
-    {MODKEY | ShiftMask, XK_space,  togglefloating, {0}               },
-    {MODKEY,             XK_0,      view,           {.ui = ~0}        },
-    {MODKEY | ShiftMask, XK_0,      tag,            {.ui = ~0}        },
-    {MODKEY,             XK_b,      focusmon,       {.i = -1}         }, /* super + b              | 光标移动到另一个显示器 */
-    {MODKEY | ShiftMask, XK_b,      focusmon,       {.i = +1}         }, /* super + shift + b      | 聚焦窗口移动到另一个显示器 */
-    {MODKEY | ShiftMask, XK_comma,  tagmon,         {.i = -1}         },
-    {MODKEY | ShiftMask, XK_period, tagmon,         {.i = +1}         },
-    {MODKEY,             XK_F12,    quit,           {0}               }, /* 退出 dwm */
+    {MODKEY | ShiftMask, XK_Return, zoom,           {0}                   }, /* super + shift + return | 将当前聚焦窗口置为主窗口 */
+    {MODKEY,             XK_Tab,    view,           {0}                   },
+    {MODKEY,             XK_q,      killclient,     {0}                   }, /* super + q              | 关闭当前窗口 */
+    {MODKEY,             XK_t,      setlayout,      {.v = &layouts[0]}    },
+    {MODKEY,             XK_f,      setlayout,      {.v = &layouts[1]}    },
+    {MODKEY,             XK_m,      setlayout,      {.v = &layouts[2]}    },
+    {MODKEY,             XK_space,  setlayout,      {0}                   },
+    {MODKEY | ShiftMask, XK_space,  togglefloating, {0}                   },
+    {MODKEY,             XK_0,      view,           {.ui = ~0}            },
+    {MODKEY | ShiftMask, XK_0,      tag,            {.ui = ~0}            },
+    {MODKEY,             XK_b,      focusmon,       {.i = -1}             }, /* super + b              | 光标移动到另一个显示器 */
+    {MODKEY | ShiftMask, XK_b,      focusmon,       {.i = +1}             }, /* super + shift + b      | 聚焦窗口移动到另一个显示器 */
+    {MODKEY | ShiftMask, XK_comma,  tagmon,         {.i = -1}             },
+    {MODKEY | ShiftMask, XK_period, tagmon,         {.i = +1}             },
+    {MODKEY,             XK_F12,    quit,           {0}                   }, /* super + F12            | 退出 dwm */
 
-    {MODKEY,             XK_Return, spawn,          SHCMD("alacritty")}, /* super + return         | 打开终端 */
+    {MODKEY,             XK_Return, spawn,          SHCMD("alacritty")    }, /* super + return         | 打开终端 */
+    {NULL,               XK_F1,     spawn,          SHCMD("flameshot gui")}, /* F1                     | 截图 */
 
     TAGKEYS(XK_1, 0)  /* 切换到 tag 1 */
     TAGKEYS(XK_2, 1)  /* 切换到 tag 2 */
